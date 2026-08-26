@@ -1,0 +1,37 @@
+---
+# Cloud Foundry deployment manifest for the AHF Finance Assistant A2A server.
+#
+# Placeholders to confirm before `cf push` (see README's "Step 7" open
+# question and joule/README.md):
+#   - org/space/route naming per environment (dev/test/prod) - the route
+#     below targets org "poc-mc10-org" on the us10-001 landscape (confirmed
+#     via `cf domains`; that org has no eu10 domain available).
+#   - exact Python runtime this org's python_buildpack offers
+#     (`cf buildpacks`); pin it via a `runtime.txt` if it doesn't default
+#     to 3.11+.
+#
+# PORT is intentionally not set here - Cloud Foundry injects $PORT at
+# runtime and ahf_agent.config.Settings already reads it from the
+# environment (see .env.example).
+applications:
+  - name: finance-ai-chatbot
+    memory: 512M
+    disk_quota: 1G
+    instances: 1
+    buildpacks:
+      - python_buildpack
+    command: python -m ahf_agent
+    routes:
+      - route: finance-ai-chatbot.cfapps.us10-001.hana.ondemand.com
+    health-check-type: http
+    health-check-http-endpoint: /healthz
+    env:
+      MODEL_NAME: gpt-5.2
+      S4HANA_DESTINATION_NAME: S43
+      ENVIRONMENT: dev
+      SERVICE_NAME: ahf-finance-assistant
+      LOG_LEVEL: INFO
+      AGENT_BASE_URL: https://finance-ai-chatbot.cfapps.us10-001.hana.ondemand.com
+    services:
+      - destination-service
+      - btp-connectivity
