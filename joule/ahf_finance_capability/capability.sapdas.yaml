@@ -1,0 +1,18 @@
+schema_version: 3.28.0
+
+metadata:
+  namespace: joule.ext
+  name: ahf_finance_assistant_capability
+  version: 1.0.0
+  display_name: AHF_Finance_Assistant_Capability
+  description: >-
+    Capability connecting the AHF Finance Assistant A2A agent for routine
+    AP, procurement, and finance FAQs, and read-only S4HANA status lookups.
+
+# Maps the logical name used in functions/finance_faq_function.yaml to a
+# BTP Destination pointing at this agent's Cloud Foundry route. The key
+# (AHF_FINANCE_AGENT) stays the same across dev/test/prod; only the
+# destination name changes per environment (see joule/README.md).
+system_aliases:
+  AHF_FINANCE_AGENT:
+    destination: AHF_FINANCE_AGENT_DEV

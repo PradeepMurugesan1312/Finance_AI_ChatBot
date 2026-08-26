@@ -1,0 +1,13 @@
+description: >-
+  Answers routine accounts payable, procurement, and general finance
+  questions - such as T&E policy, PO approval thresholds, invoice status,
+  purchase order status, purchase requisition status, vendor onboarding
+  status, and whether payment has posted against an invoice. Grounds
+  answers in company AP, procurement, and finance policy documents, links
+  to the source document on the shared drive, and looks up read-only
+  status in S4HANA. Escalates to a human when it isn't confident. Never
+  performs write-back or transactional changes in S4HANA, and never
+  returns PII or vendor banking details.
+target:
+  name: finance_faq_function
+  type: function

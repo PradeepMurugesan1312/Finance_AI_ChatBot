@@ -61,7 +61,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     add_a2a_routes_to_fastapi(
         app,
         agent_card_routes=create_agent_card_routes(agent_card),
-        jsonrpc_routes=create_jsonrpc_routes(request_handler, rpc_url=DEFAULT_RPC_URL),
+        jsonrpc_routes=create_jsonrpc_routes(
+            request_handler,
+            rpc_url=DEFAULT_RPC_URL,
+            # Joule's A2A client currently speaks the v0.3 JSON-RPC method
+            # names (e.g. `message/send`), not the v1.0 names (`SendMessage`)
+            # this SDK defaults to. Accept both on the same endpoint so this
+            # agent works with Joule today and with v1.0-native clients.
+            enable_v0_3_compat=True,
+        ),
     )
 
     @app.get("/healthz", tags=["ops"])

@@ -36,14 +36,21 @@ src/ahf_agent/
                       Gateway are wired in)
   logging_config.py   structlog JSON setup
   agent_card.py       the A2A Agent Card (identity + skills) Joule discovers
-  executor.py         core agent logic - currently a placeholder reply
+  executor.py         core agent logic - currently a placeholder reply,
+                      returned as a completed Task + artifact (the shape
+                      Joule's Dialog Function template parses)
   server.py           FastAPI app: A2A routes + /healthz
   __main__.py         `python -m ahf_agent` entrypoint
 tests/
   test_health.py            liveness probe
   test_agent_card.py        capability discovery contract
   test_executor.py          unit tests on the agent logic directly
-  test_a2a_round_trip.py    full discover -> SendMessage round trip
+  test_a2a_round_trip.py    full round trip, both as Joule actually calls
+                             it (message/send) and the native v1.0 method
+joule/
+  README.md                 how to register this agent as a Joule capability
+  da.sapdas.yaml             digital assistant manifest
+  ahf_finance_capability/    scenario + agent-request function + system alias
 ```
 
 ## Running locally
@@ -64,18 +71,37 @@ python -m ahf_agent
 pytest -v
 ```
 
-## Protocol notes (for whoever registers this with Joule)
+## Joule Studio integration
+
+This agent is built specifically to be registered as a Joule capability -
+see [`joule/README.md`](./joule/README.md) for the BTP Destination, IAS
+App2App trust, and `joule deploy` setup, and the YAML files it references.
+The two things that make the agent code itself Joule-compatible, verified
+against SAP's own Joule/A2A CodeJam and blog docs:
+
+- **Wire compatibility**: Joule's A2A client currently sends the v0.3
+  JSON-RPC method name `message/send`, not this SDK's default v1.0 name
+  `SendMessage`. `server.py` passes `enable_v0_3_compat=True` to
+  `create_jsonrpc_routes` so both work on the same endpoint - dropping that
+  flag would make this agent silently fail against real Joule traffic while
+  still passing a naive test written against the v1.0 method name.
+- **Response shape**: Joule's default Dialog Function template extracts the
+  reply via the SpEL expression `apiResponse.body.artifacts[0].parts[0].text`.
+  `executor.py` therefore responds with a completed `Task` carrying an
+  artifact (via `TaskUpdater`), not a bare `Message` - both are valid A2A
+  responses per the SDK, but only the Task+artifact shape is what Joule's
+  template reads.
+
+Other protocol notes:
 
 - Agent card is served at `/.well-known/agent-card.json` (A2A protocol
-  v1.0 well-known path).
-- Task lifecycle is JSON-RPC 2.0 over `POST /`, method `SendMessage`
-  (protobuf-based A2A v1.0 method names, e.g. `SendMessage`/`GetTask`, not
-  the older `message/send` style). Requests must include the header
-  `A2A-Version: 1.0`.
+  v1.0 well-known path - unchanged by the v0.3 JSON-RPC compat above).
 - `AgentCapabilities.streaming` and `.push_notifications` are both `false`
   today. Streaming and the async webhook pattern for long-running S4HANA
   lookups are step 5 - **do not** register this agent for a use case that
   assumes either capability until then.
+- Joule's synchronous budget for `agent-request` is 60 seconds - matches
+  the build prompt's step 5 constraint.
 
 ## Open questions for the next steps
 
