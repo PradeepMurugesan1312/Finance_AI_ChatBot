@@ -34,7 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # persist); step 5's async webhook pattern will need a durable store so
     # tasks survive an instance restart mid-lookup.
     request_handler = DefaultRequestHandler(
-        agent_executor=FinanceAssistantExecutor(),
+        agent_executor=FinanceAssistantExecutor(settings),
         task_store=InMemoryTaskStore(),
         agent_card=agent_card,
     )

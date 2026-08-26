@@ -30,6 +30,21 @@ class Settings(BaseSettings):
     # is the app's route.
     agent_base_url: str = "http://localhost:8080"
 
+    # SAP Generative AI Hub connectivity (step 2). This subaccount has no
+    # directly bindable `aicore` marketplace service, so AI Core is reached
+    # through a BTP destination (resolved at call time via the bound
+    # `destination-service` instance - see ahf_agent.ai_core) rather than a
+    # service key baked in here. Defaults point at the GENAICORE destination
+    # and GPT 5.2 deployment already live in this subaccount.
+    model_name: str = "gpt-5.2"
+    ai_core_destination_name: str = "GENAICORE"
+    ai_core_resource_group: str = "default"
+    llm_deployment_id: str = "dcc9a836b894dc1d"
+
+    # S/4HANA OData connectivity (step 4), also via a BTP destination -
+    # see ahf_agent.s4hana. Read-only: never used for write-back.
+    s4hana_destination_name: str = "S43"
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -15,6 +15,7 @@ from a2a.types import (
 )
 from a2a.utils.errors import UnsupportedOperationError
 
+from ahf_agent.config import Settings
 from ahf_agent.executor import FinanceAssistantExecutor
 
 
@@ -30,7 +31,10 @@ def _make_context(text: str) -> RequestContext:
 
 
 async def test_execute_emits_a_completed_task_with_the_reply_as_an_artifact():
-    executor = FinanceAssistantExecutor()
+    # No VCAP_SERVICES in the test environment, so the AI Core call fails and
+    # the executor must degrade to the escalation reply rather than crash the
+    # task - this is the behavior under test, not real model output.
+    executor = FinanceAssistantExecutor(Settings())
     context = _make_context("What is our T&E policy?")
     queue = EventQueueSource()
     try:
@@ -54,14 +58,14 @@ async def test_execute_emits_a_completed_task_with_the_reply_as_an_artifact():
 
     assert isinstance(artifact_event, TaskArtifactUpdateEvent)
     reply_text = artifact_event.artifact.parts[0].text
-    assert "not yet connected" in reply_text
+    assert "couldn't reach the finance model" in reply_text
 
     assert isinstance(completed, TaskStatusUpdateEvent)
     assert completed.status.state == TaskState.TASK_STATE_COMPLETED
 
 
 async def test_cancel_is_unsupported():
-    executor = FinanceAssistantExecutor()
+    executor = FinanceAssistantExecutor(Settings())
     context = _make_context("cancel me")
     queue = EventQueueSource()
     try:

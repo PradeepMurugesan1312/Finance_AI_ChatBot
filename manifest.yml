@@ -27,6 +27,9 @@ applications:
     health-check-http-endpoint: /healthz
     env:
       MODEL_NAME: gpt-5.2
+      AI_CORE_DESTINATION_NAME: GENAICORE
+      AI_CORE_RESOURCE_GROUP: default
+      LLM_DEPLOYMENT_ID: dcc9a836b894dc1d
       S4HANA_DESTINATION_NAME: S43
       ENVIRONMENT: dev
       SERVICE_NAME: ahf-finance-assistant

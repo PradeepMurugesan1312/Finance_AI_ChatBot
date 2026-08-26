@@ -1,11 +1,36 @@
+parameters:
+  - name: contextId
+    optional: true
+  - name: taskId
+    optional: true
+
 action_groups:
   - actions:
+      - type: status-update
+        message: <? "Checking company records for your finance question..." ?>
+
       - type: agent-request
-        system_alias: AHF_FINANCE_AGENT
         agent_type: remote
+        system_alias: AHF_FINANCE_AGENT
+        body: >
+          <? (contextId == null || contextId.isEmpty()) && (taskId == null || taskId.isEmpty())
+             ? null
+             : '{"contextId": "' + contextId + '", "taskId": "' + taskId + '"}' ?>
         result_variable: "apiResponse"
+
+      - type: set-variables
+        variables:
+          - name: contextId
+            value: <? apiResponse.body.contextId ?>
+          - name: taskId
+            value: <? apiResponse.body.id ?>
+
       - type: message
         message:
           type: text
           markdown: true
           content: "<? apiResponse.body.artifacts[0].parts[0].text ?>"
+
+result:
+  contextId: "<? contextId ?>"
+  taskId: "<? taskId ?>"

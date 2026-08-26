@@ -9,5 +9,16 @@ description: >-
   performs write-back or transactional changes in S4HANA, and never
   returns PII or vendor banking details.
 target:
-  name: finance_faq_function
   type: function
+  name: finance_faq_function
+  parameters:
+    - name: contextId
+      value: $capability_context.contextId
+    - name: taskId
+      value: $capability_context.taskId
+
+capability_context:
+  - name: contextId
+    value: $target_result.contextId
+  - name: taskId
+    value: $target_result.taskId
