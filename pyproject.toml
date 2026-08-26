@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ahf-agent"
+version = "0.1.0"
+description = "AHF Finance Assistant - an A2A server answering routine AP, procurement, and finance questions grounded in company policy documents"
+requires-python = ">=3.11"
+dependencies = [
+    "a2a-sdk[fastapi]>=1.1.2,<2",
+    "uvicorn[standard]>=0.34",
+    "pydantic-settings>=2.6",
+    "structlog>=24.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ahf_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
