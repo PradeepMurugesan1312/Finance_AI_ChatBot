@@ -14,6 +14,7 @@ from a2a.server.routes import (
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.utils.constants import DEFAULT_RPC_URL
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from ahf_agent.agent_card import build_agent_card
@@ -56,6 +57,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description=agent_card.description,
         version=settings.service_version,
         lifespan=lifespan,
+    )
+
+    # Permissive CORS so a browser-hosted demo UI (bypassing the still-broken
+    # Joule integration - see joule/README.md) can call this agent directly.
+    # Safe to leave on: the endpoint has no auth of its own yet either way,
+    # and every tool call here is already read-only.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     add_a2a_routes_to_fastapi(
